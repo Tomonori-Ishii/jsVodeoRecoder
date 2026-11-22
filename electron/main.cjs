@@ -8,8 +8,9 @@ const policy = require('./recording/policy.cjs');
 const { RECORD } = require('./recording/format.cjs');
 
 // Fixed content size. Keep in sync with the spacing and button sizes in src/App.css.
-// 256 is the narrowest width at which every element fits (checked at 240px: content overflows, 256px: fits).
-const WINDOW_WIDTH = 256;
+// 292 = 256 (3 buttons, checked: 240px overflows, 256px fits) + one 30px button + 6px gap (4th button, issue #3).
+// Not yet checked in a real render; verify that every element fits at this width.
+const WINDOW_WIDTH = 292;
 const WINDOW_HEIGHT = 80;
 
 // Only the permissions the recorder needs (ADR-0025, design 7.2).

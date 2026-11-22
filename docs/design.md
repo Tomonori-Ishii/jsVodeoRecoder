@@ -16,7 +16,7 @@
 ┌──────────────── Electron（Chromium + Node.js）────────────────┐
 │                                                                │
 │  メインプロセス: electron/main.cjs                              │
-│   - 窓の生成（256×80、リサイズ不可）                            │
+│   - 窓の生成（292×80、リサイズ不可）                            │
 │   - 権限（media のみ許可）                                      │
 │   - ダウンロードの保存先を Downloads に固定                     │
 │   - 保存完了を画面へ通知（recording-saved）                     │
@@ -245,15 +245,15 @@
 
 `new BrowserWindow({...})`:
 
-- `width: 256`、`height: 80`、`useContentSize: true`（数値は内容の領域。枠は含まない）
+- `width: 292`、`height: 80`、`useContentSize: true`（数値は内容の領域。枠は含まない）
 - `resizable: false`、`maximizable: false`、`fullscreenable: false`
 - `autoHideMenuBar: true`、`title: 'Video Recoder'`
 
-- 幅 256px は、すべての要素が収まる最小値（240px では右端がはみ出し、256px で収まることを確認）。
+- 幅 292px は、4 個のボタン（ミュートを含む）で、すべての要素が収まる想定の値。ミュートの追加前は、3 個のボタンで 256px に収まることを確認していた。292px は実機の描画で未確認。
 - 高さ 80px は、上段（20px）、下段（20px）、メッセージ（13px）と間隔、余白の合計。
 - 寸法は `electron/main.cjs` の `WINDOW_WIDTH`、`WINDOW_HEIGHT` と、`src/App.css` の値を揃える。片方を変えたら両方を変える。
 
-履歴（旧 ADR-0007、ADR-0014）: 300×260 → 300×190 → 300×80 → 256×80。ボタンは 52×28 → 40×20 → 30×20px。
+履歴（旧 ADR-0007、ADR-0014）: 300×260 → 300×190 → 300×80 → 256×80 → 292×80（ミュートボタン追加、Issue #3）。ボタンは 52×28 → 40×20 → 30×20px。
 
 ## 15. UI レイアウト
 
@@ -349,7 +349,7 @@ pytest で、次の 4 つのファイルを実行する。テストは **ソー�
 | ファイル | 検査内容 | 対象機能 |
 |---|---|---|
 | `tests/test_features_json.py`（10 件） | `features.json` の形式、ID の重複、`implemented` と `status` の整合、`testPath` の参照先、`design` 欄の見出しの存在、要件書（`requirements.md`）の機能 ID との一致 | 全機能 |
-| `tests/test_electron_config.py`（9 件） | 窓の寸法（256×80）、リサイズ不可、`contextIsolation`、`nodeIntegration`、`sandbox`、preload の設定と公開範囲、権限、読み込み元、`will-download` と `recording-saved` | F-004、F-016 |
+| `tests/test_electron_config.py`（9 件） | 窓の寸法（292×80）、リサイズ不可、`contextIsolation`、`nodeIntegration`、`sandbox`、preload の設定と公開範囲、権限、読み込み元、`will-download` と `recording-saved` | F-004、F-016 |
 | `tests/test_ui_source.py`（10 件） | MP3 の設定（モノラル、44100、128）、エラーの分類と文言、保存メッセージ、ティッカーの実装、ボタンのラベル、状態ラベルの不在、日本語 | F-005、F-012〜F-015、F-018 |
 | `tests/test_build.py`（`build` マーカー、3 件） | `vite build` が成功し、一時フォルダに出力されること、`./assets/` の相対パス、`lame.min` の出力 | ビルド |
 | 合計 | 32 件（`pytest -m "not build"` で 29 件、ビルドを含めて 32 件） | |
@@ -383,7 +383,7 @@ npm run build
 npm run start
 ```
 
-- 期待: ビルドのあと Electron が起動し、256×80 の窓が開く。ターミナルに、アプリからのエラーは出ない。GPU 関連のエラーは環境による（`--disable-gpu` で消える）。
+- 期待: ビルドのあと Electron が起動し、292×80 の窓が開く。ターミナルに、アプリからのエラーは出ない。GPU 関連のエラーは環境による（`--disable-gpu` で消える）。
 
 ### 20.4 自動テスト
 

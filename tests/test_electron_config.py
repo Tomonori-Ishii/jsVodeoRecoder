@@ -21,9 +21,9 @@ def _has(pattern: str) -> bool:
     return re.search(pattern, MAIN) is not None
 
 
-# F-016: ウィンドウは 256×80 の固定サイズ（設計書 14 章）
-def test_window_content_size_is_256_by_80():
-    assert _value("WINDOW_WIDTH") == "256"
+# F-016: ウィンドウは 292×80 の固定サイズ（設計書 14 章。F-041 のミュートボタンを加えて 256 から広げた）
+def test_window_content_size_is_292_by_80():
+    assert _value("WINDOW_WIDTH") == "292"
     assert _value("WINDOW_HEIGHT") == "80"
     assert _has(r"useContentSize:\s*true")
 
