@@ -49,4 +49,4 @@ def test_build_has_no_mp3_encoder_and_contains_h264_settings(built_dir):
     assert not any(n.startswith("lame.min-") for n in names)
     # The H.264 codec string used by the recorder is present in the bundled script.
     scripts = "".join(p.read_text(encoding="utf-8") for p in (built_dir / "assets").glob("*.js"))
-    assert "avc1.4d401f" in scripts
+    assert "avc1.4d4028" in scripts

@@ -19,13 +19,13 @@ def _const(source: str, name: str) -> str:
     return match.group(1).strip()
 
 
-# F-023 / F-024 / ADR-0016: 1280×720、10fps、約 1Mbps の H.264
-def test_video_is_720p_10fps_about_1mbps_h264():
-    assert _const(RECORDER, "WIDTH") == "1280"
-    assert _const(RECORDER, "HEIGHT") == "720"
+# F-023 / F-024 / ADR-0027: 1920×1080、10fps、約 3Mbps の H.264（レベル 4.0）
+def test_video_is_1080p_10fps_about_3mbps_h264():
+    assert _const(RECORDER, "WIDTH") == "1920"
+    assert _const(RECORDER, "HEIGHT") == "1080"
     assert _const(RECORDER, "FPS") == "10"
-    assert _const(RECORDER, "VIDEO_BITRATE") == "1000000"
-    assert _const(RECORDER, "AVC_CODEC") == "'avc1.4d401f'"
+    assert _const(RECORDER, "VIDEO_BITRATE") == "3000000"
+    assert _const(RECORDER, "AVC_CODEC") == "'avc1.4d4028'"
     assert "avc: { format: 'avc' }" in RECORDER
 
 

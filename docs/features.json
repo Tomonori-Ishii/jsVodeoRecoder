@@ -17,8 +17,8 @@
         "container": "mp4",
         "fps": 10,
         "frameRateMode": "CFR",
-        "resolution": "1280x720",
-        "bitrateMbps": "1 (VBR, target)",
+        "resolution": "1920x1080",
+        "bitrateMbps": "3 (VBR, target)",
         "encoder": {
           "preferred": "hardware",
           "fallback": "software (CPU, during recording)"
@@ -582,7 +582,7 @@
     {
       "id": "F-024",
       "title": "映像の形式を H.264 の mp4 にする",
-      "description": "コーデックは H.264、コンテナは mp4。解像度は 1280×720 px、ビットレートは約 1Mbps（可変。目標値）にする。",
+      "description": "コーデックは H.264、コンテナは mp4。解像度は 1920×1080 px、ビットレートは約 3Mbps（可変。目標値）にする（ADR-0027）。",
       "category": "screenRecording",
       "priority": "must",
       "status": "implemented",
@@ -590,8 +590,8 @@
       "testPath": "tests/test_ui_source.py",
       "acceptance": [
         "コーデックが H.264",
-        "解像度が 1280×720",
-        "ビットレートが約 1Mbps（目標値）"
+        "解像度が 1920×1080",
+        "ビットレートが約 3Mbps（目標値）"
       ],
       "design": [
         "24. 中間ファイルと mp4 の作成"
@@ -820,7 +820,7 @@
       "implemented": true,
       "testPath": "electron/recording/recording.test.cjs",
       "acceptance": [
-        "空き容量が 3GB 未満のとき、録画は始まらない（仮）",
+        "空き容量が 6GB 未満のとき、録画は始まらない（仮）",
         "録画中、空き容量が「中間データの大きさ＋0.5GB」を下回ると、録画が止まり、中間ファイルが残る（仮）",
         "停止後、空き容量が「中間データの大きさ＋0.2GB」未満のときは、mp4 を作らず中間ファイルが残る（仮）",
         "空き容量の不足で止めるときは mp4 を作らない（システムの安定性を優先）"

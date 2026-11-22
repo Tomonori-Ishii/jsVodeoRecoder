@@ -57,8 +57,8 @@ test('frame index is derived from the 10 fps timestamp', () => {
 
 test('disk policy thresholds (ADR-0022)', () => {
   const GB = policy.GB;
-  assert.equal(policy.canStartRecording(3 * GB), true);
-  assert.equal(policy.canStartRecording(3 * GB - 1), false);
+  assert.equal(policy.canStartRecording(6 * GB), true);
+  assert.equal(policy.canStartRecording(6 * GB - 1), false);
   // Recording stops when free space falls below intermediate + 0.5 GB.
   assert.equal(policy.shouldStopForSpace(1.5 * GB + 1, 1 * GB), false);
   assert.equal(policy.shouldStopForSpace(1.5 * GB - 1, 1 * GB), true);

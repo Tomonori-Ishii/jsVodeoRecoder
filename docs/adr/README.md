@@ -9,7 +9,7 @@
 
 | ADR | タイトル | Status | 関連 |
 |---|---|---|---|
-| [0016](0016-screen-video-format.md) | 映像の形式: H.264、mp4、1280×720、10fps、約 1Mbps | Accepted | F-023、F-024 |
+| [0016](0016-screen-video-format.md) | 映像の形式: H.264、mp4、1280×720、10fps、約 1Mbps | Superseded（0027） | F-023、F-024 |
 | [0017](0017-drop-mp3-audio-only.md) | 音声だけの録音（MP3）を廃止し、音声は映像の一部にする | Accepted | F-004〜F-006、F-022 |
 | [0018](0018-intermediate-h264-segments.md) | 中間形式は H.264 を録画中に符号化し、3 分単位の一時ファイルに保存する | Accepted | F-029〜F-031 |
 | [0019](0019-encoder-hw-first.md) | 符号化はハードウェアを優先し、使えないときは録画中に CPU で行う | Proposed | F-036、7.3a |
@@ -20,3 +20,4 @@
 | [0024](0024-save-from-main-process.md) | 保存はメインプロセスがファイルへ書く（Blob を使わない）。preload の公開範囲を広げる | Accepted | F-031、ADR-0013 を一部変更 |
 | [0025](0025-screen-capture-permission.md) | 画面収録の権限を許可し、ピッカーは出さない | Accepted | F-033、ADR-0013 を一部変更 |
 | [0026](0026-audio-opus.md) | 音声の符号化は AAC から Opus に変更する | Accepted | F-022、ADR-0016、ADR-0017 を一部変更 |
+| [0027](0027-video-1080p-3mbps.md) | 映像は 1920×1080、約 3Mbps にする（ADR-0016 を置き換え） | Accepted | Issue #1、F-024、ADR-0016 を置き換え |

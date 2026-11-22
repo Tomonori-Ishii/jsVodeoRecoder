@@ -4,15 +4,15 @@
 
 export const METER_FLOOR_DB = -60;
 
-const WIDTH = 1280;
-const HEIGHT = 720;
+const WIDTH = 1920;
+const HEIGHT = 1080;
 const FPS = 10;
 const FRAME_US = 100000; // 10 fps in microseconds
 const TICK_MS = 100;
 const RECORDING_LIMIT_FRAMES = 2 * 60 * 60 * FPS; // 2 hours (F-029)
 const KEYFRAME_INTERVAL = 30; // encoded frames between keyframes
-const VIDEO_BITRATE = 1000000; // about 1 Mbps (ADR-0016)
-const AVC_CODEC = 'avc1.4d401f'; // H.264 Main, level 3.1
+const VIDEO_BITRATE = 3000000; // 3 Mbps: quality equal to 720p at 1.5 Mbps (ADR-0027)
+const AVC_CODEC = 'avc1.4d4028'; // H.264 Main, level 4.0 (1080p needs more macroblocks than level 3.1)
 
 const AUDIO_RATE = 48000;
 const AUDIO_CHANNELS = 1;
@@ -214,7 +214,7 @@ export class Recorder {
         throw new RecorderError(
           result?.code ?? 'START_FAILED',
           result?.code === 'LOW_SPACE'
-            ? '空き容量が足りません。録画を始めるには 3GB 以上の空きが必要です。'
+            ? '空き容量が足りません。録画を始めるには 6GB 以上の空きが必要です。'
             : '録画を始められませんでした。',
         );
       }
@@ -278,7 +278,7 @@ export class Recorder {
     });
   }
 
-  /** Draws the newest screen frame onto the 1280x720 canvas, letterboxed in black. */
+  /** Draws the newest screen frame onto the 1920x1080 canvas, letterboxed in black. */
   drawFrame() {
     const g = this.g2d;
     g.fillStyle = '#000';
