@@ -6,10 +6,10 @@ Electron と React で作った、小さなデスクトップ向けの録画ア�
 
 - 映像: H.264、1280×720、10fps（固定）、約 1Mbps（可変）
 - 音声: Opus、48kHz、モノラル、128kbps（マイクとスピーカーの音を混ぜる。下の「既知の制限」を参照）
-- 操作: ● 開始、❚❚ 一時停止、▶ 再開、■ 停止。録画中は音量バーと dB 表示を見られる
+- 操作: ● 開始、❚❚ 一時停止、▶ 再開、■ 停止、マイクのミュート（録音中と一時停止中）。録画中は音量バーと dB 表示を見られる
 - 保存先: Downloads フォルダ（保存先のダイアログは出ない）
 - 上限: 2 時間で自動停止し、ここまでの分を保存する
-- 画面: 256×80 の固定サイズの小さな窓
+- 画面: 292×80 の固定サイズの小さな窓
 
 要件は [docs/requirements.md](docs/requirements.md)、設計の概要は [docs/screen-recording-design.md](docs/screen-recording-design.md)、詳細は [docs/design.md](docs/design.md) の 23〜26 章、設計判断は [docs/adr/README.md](docs/adr/README.md) にあります。機能の一覧と検証状況は [docs/features.json](docs/features.json) にあります。
 

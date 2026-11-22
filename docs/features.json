@@ -7,7 +7,7 @@
     "ui": "React 19",
     "bundler": "Vite 8",
     "window": {
-      "widthPx": 256,
+      "widthPx": 292,
       "heightPx": 80,
       "resizable": false
     },
@@ -369,14 +369,14 @@
     {
       "id": "F-014",
       "title": "操作ボタンをアイコンで表示する",
-      "description": "開始・一時停止/再開・停止をアイコンで表示する。ボタンは 30×20px。",
+      "description": "開始・一時停止/再開・停止・ミュートをアイコンで表示する。ボタンは 30×20px。",
       "category": "ui",
       "priority": "must",
       "status": "implemented",
       "implemented": true,
       "testPath": "tests/test_ui_source.py",
       "acceptance": [
-        "開始は ●、一時停止は ❚❚、再開は ▶、停止は ■",
+        "開始は ●、一時停止は ❚❚、再開は ▶、停止は ■、ミュートはマイクのアイコン（ミュート中は斜線）",
         "各ボタンに aria-label と title を付ける"
       ],
       "design": [
@@ -410,14 +410,14 @@
     {
       "id": "F-016",
       "title": "ウィンドウを固定サイズにする",
-      "description": "ウィンドウは 256×80 で、リサイズできない。すべての操作要素が収まる。",
+      "description": "ウィンドウは 292×80 で、リサイズできない。すべての操作要素が収まる。",
       "category": "ui",
       "priority": "must",
       "status": "implemented",
       "implemented": true,
       "testPath": "tests/test_electron_config.py",
       "acceptance": [
-        "内容の領域が 256×80 である",
+        "内容の領域が 292×80 である",
         "スクロールは発生しない",
         "リサイズ・最大化・全画面化ができない"
       ],
@@ -937,6 +937,29 @@
       ],
       "design": [
         "26. 一時ファイルの掃除と異常終了"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-041",
+      "title": "マイクをミュートする",
+      "description": "録音中と一時停止中に、ミュートボタンでマイクの音を止める。ミュート中は無音として記録し、時間軸は保つ。スピーカーの音は変えない。録音を始めるたびにミュートは解除された状態で始まる（Issue #3）。",
+      "category": "ui",
+      "priority": "should",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "ミュート中はマイクのゲインが 0 になり、スピーカーのゲインは変わらない",
+        "ミュートボタンは録音中と一時停止中だけ有効になる",
+        "ミュートボタンは aria-label と title を持ち、ミュート中は表示が変わる",
+        "録音を始めると、ミュートは解除された状態になる"
+      ],
+      "design": [
+        "15. UI レイアウト"
       ],
       "verification": {
         "automatedE2E": "not-run",

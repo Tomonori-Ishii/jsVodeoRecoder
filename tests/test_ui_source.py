@@ -55,6 +55,25 @@ def test_recorder_requires_electron():
     assert "画面録画は Electron アプリとしてのみ使えます" in RECORDER
 
 
+# F-041 / Issue #3: マイクのミュートは、マイクのゲインを 0 にする（時間軸は保つ。スピーカーは変えない）
+def test_mic_mute_silences_only_the_microphone_gain():
+    assert "this.muted = false" in RECORDER
+    assert "setMuted(muted) {" in RECORDER
+    assert "this.micGain.gain.value = muted ? 0 : MIC_GAIN" in RECORDER
+    assert "this.micGain.gain.value = this.muted ? 0 : MIC_GAIN" in RECORDER
+    # The speaker (system) gain is not changed by mute.
+    assert "systemGain.gain.value = SYSTEM_GAIN" in RECORDER
+    assert "this.systemGain" not in RECORDER
+
+
+# F-041: ミュートボタンは録音中と一時停止中だけ有効で、aria-label と title を持つ
+def test_mute_button_is_enabled_only_while_busy_and_labelled():
+    assert "handleMute" in APP
+    assert "aria-label={muted ? 'ミュート解除' : 'ミュート'}" in APP
+    assert "title={muted ? 'ミュート解除' : 'ミュート'}" in APP
+    assert "disabled={!busy || saving}" in APP
+
+
 # F-027 / F-033: 画面は録画対象から除外し、拒否時は F-033 の文言を使う
 def test_screen_denial_uses_the_f033_message():
     assert "画面の録画が許可されていません。OSやアプリの画面収録の設定を確認してください。" in RECORDER

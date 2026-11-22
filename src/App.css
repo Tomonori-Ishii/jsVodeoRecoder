@@ -56,7 +56,7 @@ body {
 :root {
   --btn-size: 30px;
   --btn-gap: 6px;
-  --buttons-width: calc(var(--btn-size) * 3 + var(--btn-gap) * 2);
+  --buttons-width: calc(var(--btn-size) * 4 + var(--btn-gap) * 3);
 }
 
 .app {

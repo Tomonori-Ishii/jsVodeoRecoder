@@ -139,6 +139,8 @@ export class Recorder {
     this.meterSumSquares = 0;
     this.meterCount = 0;
     this.audioEnabled = false;
+    this.muted = false; // microphone muted: recorded as silence (issue #3)
+    this.micGain = null;
     this.dir = null;
     this.fileName = null;
     this.windowExcluded = false;
@@ -235,6 +237,15 @@ export class Recorder {
     this.timer = setInterval(() => this.tick(), TICK_MS);
   }
 
+  /**
+   * Mutes or unmutes the microphone. Muted parts are recorded as silence, so the timeline is kept.
+   * Only the microphone is affected; the speaker sound is not changed.
+   */
+  setMuted(muted) {
+    this.muted = muted;
+    if (this.micGain) this.micGain.gain.value = muted ? 0 : MIC_GAIN;
+  }
+
   async startAudio() {
     this.ctx = new AudioContext({ sampleRate: AUDIO_RATE });
     if (this.ctx.sampleRate !== AUDIO_RATE) {
@@ -246,9 +257,9 @@ export class Recorder {
 
     const mix = this.ctx.createGain();
     mix.gain.value = 1;
-    const micGain = this.ctx.createGain();
-    micGain.gain.value = MIC_GAIN;
-    this.ctx.createMediaStreamSource(this.mic).connect(micGain).connect(mix);
+    this.micGain = this.ctx.createGain();
+    this.micGain.gain.value = this.muted ? 0 : MIC_GAIN;
+    this.ctx.createMediaStreamSource(this.mic).connect(this.micGain).connect(mix);
     if (this.display.getAudioTracks().length > 0) {
       const systemGain = this.ctx.createGain();
       systemGain.gain.value = SYSTEM_GAIN;
@@ -485,6 +496,7 @@ export class Recorder {
     this.audioEncoder = null;
     this.ctx = null;
     this.worklet = null;
+    this.micGain = null;
     this.mic = null;
     this.display = null;
   }

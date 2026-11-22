@@ -40,6 +40,27 @@ function IconPause() {
   );
 }
 
+function IconMic() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" />
+      <rect x="7.2" y="11" width="1.6" height="2.5" />
+      <rect x="4.5" y="13" width="7" height="1.3" rx="0.6" />
+    </svg>
+  );
+}
+
+function IconMicOff() {
+  return (
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <rect x="5.5" y="1.5" width="5" height="8.5" rx="2.5" />
+      <rect x="7.2" y="11" width="1.6" height="2.5" />
+      <rect x="4.5" y="13" width="7" height="1.3" rx="0.6" />
+      <rect x="0.5" y="7.2" width="15" height="1.6" transform="rotate(-45 8 8)" />
+    </svg>
+  );
+}
+
 function IconPlay() {
   return (
     <svg viewBox="0 0 16 16" aria-hidden="true">
@@ -117,6 +138,7 @@ function Ticker({ text }) {
 
 export default function App() {
   const [status, setStatus] = useState('idle'); // 'idle' | 'recording' | 'paused' | 'saving'
+  const [muted, setMuted] = useState(false); // microphone muted during the recording (issue #3)
   const [devices, setDevices] = useState([]); // audio input devices
   const [deviceId, setDeviceId] = useState('');
   const [level, setLevel] = useState(IDLE_LEVEL);
@@ -199,9 +221,18 @@ export default function App() {
     return () => clearInterval(id);
   }, [status]);
 
+  const handleMute = () => {
+    const recorder = recorderRef.current;
+    if (!recorder) return;
+    const next = !muted;
+    recorder.setMuted(next);
+    setMuted(next);
+  };
+
   const handleStart = async () => {
     if (startingRef.current || recorderRef.current) return; // ignore double clicks
     startingRef.current = true;
+    setMuted(false); // each recording starts unmuted
     showInfo('');
     const recorder = new Recorder({
       onLevel: setLevel,
@@ -334,6 +365,16 @@ export default function App() {
           title="停止"
         >
           <IconStop />
+        </button>
+        <button
+          type="button"
+          onClick={handleMute}
+          disabled={!busy || saving}
+          aria-label={muted ? 'ミュート解除' : 'ミュート'}
+          title={muted ? 'ミュート解除' : 'ミュート'}
+          aria-pressed={muted}
+        >
+          {muted ? <IconMicOff /> : <IconMic />}
         </button>
       </div>
 
