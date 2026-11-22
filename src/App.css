@@ -1,0 +1,242 @@
+:root {
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --text: #1f2328;
+  --muted: #646b73;
+  --border: #d0d7de;
+  --accent: #2f6fed;
+  --accent-text: #ffffff;
+  --rec: #d1242f;
+  --pause: #9a6700;
+  --meter-fill: #8c949c;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #1e1f22;
+    --panel: #2a2c31;
+    --text: #e6e8eb;
+    --muted: #9aa1a9;
+    --border: #3d424a;
+    --accent: #4c8bf5;
+    --accent-text: #ffffff;
+    --rec: #ff6b6b;
+    --pause: #e3b341;
+    --meter-fill: #7d858d;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', 'Hiragino Sans', 'Yu Gothic UI', sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+}
+
+/*
+ * Grid layout (3 columns x 3 rows). Keep --buttons-width in sync with the
+ * window width in electron/main.cjs (WINDOW_WIDTH).
+ *   [timer]  [dB]  [level meter]
+ *   [mic select .........]  [buttons]
+ *   [message ...................]
+ */
+:root {
+  --btn-size: 30px;
+  --btn-gap: 6px;
+  --buttons-width: calc(var(--btn-size) * 3 + var(--btn-gap) * 2);
+}
+
+.app {
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto auto minmax(var(--buttons-width), 1fr);
+  grid-template-rows: 20px 20px auto;
+  align-content: center;
+  column-gap: 6px;
+  row-gap: 2px;
+  padding: 4px 8px;
+}
+
+select {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 20px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-overflow: ellipsis;
+}
+
+.mic-select {
+  grid-column: 1 / span 2;
+  grid-row: 2;
+  width: 100%;
+  min-width: 0;
+  height: 20px;
+  align-self: center;
+}
+
+.meter {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: center;
+  min-width: 0;
+  height: 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: var(--meter-fill);
+  transition: width 60ms linear;
+}
+
+.db {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  width: 52px;
+  font-size: 11px;
+  line-height: 12px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.timer {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+  align-self: center;
+  font-size: 12pt;
+  line-height: 1;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.buttons {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: stretch;
+  align-self: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+button {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.buttons button {
+  width: var(--btn-size);
+  height: 20px;
+  padding: 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buttons svg {
+  width: 10px;
+  height: 10px;
+  fill: currentColor;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.buttons button:first-child:not(:disabled) {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.message {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  margin: 0;
+  height: 13px;
+  font-size: 11px;
+  line-height: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.message-error {
+  color: var(--rec);
+}
+
+/* Saved-file message: one line that scrolls like a news ticker when it does not fit.
+ * The speed is set from App.jsx (TICKER_SPEED_PX_PER_SEC). */
+.ticker {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  display: inline-block;
+}
+
+.ticker-track {
+  display: inline-flex;
+  animation-name: ticker;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+
+/* Each repeat is followed by a gap, so the track is two identical halves. */
+.ticker-track .ticker-item {
+  padding-right: 3em;
+}
+
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}

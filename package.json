@@ -1,0 +1,23 @@
+{
+  "name": "js-recorder",
+  "version": "1.0.0",
+  "description": "Screen and audio recorder (Electron + React). Records the primary screen to mp4.",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "npm run build && electron ."
+  },
+  "dependencies": {
+    "mp4-muxer": "5.2.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.3.0",
+    "electron": "45.4.1",
+    "vite": "8.3.8"
+  }
+}

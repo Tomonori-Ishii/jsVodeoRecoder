@@ -1,0 +1,3 @@
+# テスト用の Python パッケージ（pytest）。
+# インストール: python -m pip install -r requirements-dev.txt
+pytest==9.2.0

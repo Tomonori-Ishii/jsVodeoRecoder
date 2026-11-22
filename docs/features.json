@@ -1,0 +1,957 @@
+{
+  "project": "js-recorder",
+  "description": "音声レコーダー（Electron + React）の機能一覧",
+  "generatedAt": "2026-11-21",
+  "target": {
+    "runtime": "Electron 45",
+    "ui": "React 19",
+    "bundler": "Vite 8",
+    "window": {
+      "widthPx": 256,
+      "heightPx": 80,
+      "resizable": false
+    },
+    "screenRecording": {
+      "video": {
+        "codec": "H.264",
+        "container": "mp4",
+        "fps": 10,
+        "frameRateMode": "CFR",
+        "resolution": "1280x720",
+        "bitrateMbps": "1 (VBR, target)",
+        "encoder": {
+          "preferred": "hardware",
+          "fallback": "software (CPU, during recording)"
+        },
+        "sameFrame": "not stored (skip frame at mux)"
+      },
+      "audio": {
+        "channels": "mono",
+        "sampleRateHz": 48000,
+        "codec": "Opus",
+        "bitrateKbps": 128,
+        "sources": [
+          "microphone",
+          "speaker (Windows loopback; Linux not yet)"
+        ]
+      },
+      "limits": {
+        "maxDurationHours": 2,
+        "segmentMinutes": 3
+      },
+      "targetOS": [
+        "Linux",
+        "Windows"
+      ],
+      "screen": "primary (fixed)",
+      "diskCheck": {
+        "startMinFreeGB": 3,
+        "recordingStopRule": "free < intermediateGB + 0.5",
+        "recordingIntervalSec": 10,
+        "stopMuxRule": "free >= intermediateGB + 0.2",
+        "status": "provisional",
+        "shortageStop": "no mux (system stability first)"
+      },
+      "cleanup": {
+        "startup": true,
+        "states": [
+          "recording",
+          "stopping",
+          "stopped-space",
+          "failed",
+          "saved"
+        ],
+        "unknownState": "keep and log"
+      },
+      "playability": "viewable only when stop-time mux succeeds; partial mp4 (.partial) is deleted on failure or abnormal exit"
+    }
+  },
+  "verificationMethods": {
+    "automatedE2E": "Electron を --use-fake-device-for-media-stream 付きで起動し、DevTools から操作して確認",
+    "realMicrophone": "実機のマイクでの確認（未実施）"
+  },
+  "features": [
+    {
+      "id": "F-001",
+      "title": "録音を開始する",
+      "description": "開始ボタンを押すと、選択中のマイクから録音を始める。",
+      "category": "recording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "開始ボタンでマイクを取得し、録音を開始する",
+        "録音中は経過時間が進む",
+        "録音中は開始ボタンが無効になり、一時停止と停止が有効になる"
+      ],
+      "design": [
+        "4. 録音パイプライン",
+        "8. 状態遷移と一時停止"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-002",
+      "title": "一時停止する",
+      "description": "一時停止ボタンを押すと、録音を止める。経過時間と音量表示も止まる。",
+      "category": "recording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "一時停止中は経過時間が進まない",
+        "一時停止中は音量バーが 0%、dB 表示が -60.0 dB になる",
+        "ボタンが再開（▶）に変わる"
+      ],
+      "design": [
+        "6. 経過時間",
+        "8. 状態遷移と一時停止"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-003",
+      "title": "再開する",
+      "description": "一時停止中に再開ボタンを押すと、同じファイルに続けて録音する。",
+      "category": "recording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "再開すると経過時間が続きから進む",
+        "1 つの MP3 ファイルに続けて書き込まれる"
+      ],
+      "design": [
+        "8. 状態遷移と一時停止"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-004",
+      "title": "停止して MP3 を保存する",
+      "description": "停止して MP3 を保存する。廃止。停止して mp4 を保存する（F-021、F-031 に置き換え）。",
+      "category": "file",
+      "priority": "must",
+      "status": "superseded",
+      "implemented": false,
+      "testPath": null,
+      "acceptance": [
+        "停止で録音を終え、ボタンが初期状態に戻る",
+        "MP3 が Downloads に、ファイル名（F-006）で保存される",
+        "保存先のダイアログは出ない",
+        "MP3 の長さが、一時停止を除いた録音時間と一致する"
+      ],
+      "design": [
+        "11. 保存"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      },
+      "supersededBy": [
+        "F-021",
+        "F-031"
+      ]
+    },
+    {
+      "id": "F-005",
+      "title": "MP3 にエンコードする",
+      "description": "MP3 にエンコードする。廃止（F-024 の H.264、F-022 の Opus に置き換え）。",
+      "category": "recording",
+      "priority": "must",
+      "status": "superseded",
+      "implemented": false,
+      "testPath": null,
+      "acceptance": [
+        "モノラル、44.1kHz、128kbps の MP3 を出力する",
+        "出力は ffprobe で有効な MP3 と判定される"
+      ],
+      "design": [],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      },
+      "supersededBy": [
+        "F-024"
+      ]
+    },
+    {
+      "id": "F-006",
+      "title": "ファイル名に録音開始時刻を付ける",
+      "description": "ファイル名に録音開始時刻を付ける（MP3）。廃止（F-032 に置き換え）。",
+      "category": "file",
+      "priority": "must",
+      "status": "superseded",
+      "implemented": false,
+      "testPath": null,
+      "acceptance": [
+        "開始時刻を秒まで含む（例: recording_20261119_143025.mp3）",
+        "一時停止と再開をしても、ファイル名は変わらない"
+      ],
+      "design": [
+        "17. ファイル名"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      },
+      "supersededBy": [
+        "F-032"
+      ]
+    },
+    {
+      "id": "F-007",
+      "title": "経過時間を 100ms 単位で表示する",
+      "description": "録音中の経過時間を 時:分:秒.十分の一秒（h:mm:ss.t、t は 100ms の 1 桁）で表示する。時は常に表示する。",
+      "category": "display",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "表示は約 30ms ごとに更新される",
+        "表示は h:mm:ss.t の形式で、t は 100ms の 1 桁（切り捨て）",
+        "一時停止中は値が変わらない"
+      ],
+      "design": [
+        "6. 経過時間"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-008",
+      "title": "音量をバーと dB で表示する",
+      "description": "録音中・録画中の音量を、0〜100% のバーと dB の数値で表示する。録画中は、マイクとスピーカーを混ぜた音声のレベルを示す。",
+      "category": "display",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "バーは 0〜100%、dB は -60.0 から 0 の範囲",
+        "約 50ms ごとに更新される",
+        "バーの色はグレー 1 色"
+      ],
+      "design": [
+        "7. 音量メーター"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-009",
+      "title": "一時停止中は音量を 0 にする",
+      "description": "一時停止中は音量バーを 0%、dB を -60.0 dB に戻す。",
+      "category": "display",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "一時停止に入ると、音量表示が初期値になる"
+      ],
+      "design": [
+        "8. 状態遷移と一時停止"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-010",
+      "title": "マイクを選択する",
+      "description": "利用可能な音声入力デバイスを一覧から選んで録音に使う。",
+      "category": "device",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "音声入力デバイスを一覧表示する",
+        "録音中と一時停止中は選択を変更できない",
+        "マイクの接続・切断で一覧を更新する（devicechange）"
+      ],
+      "design": [
+        "9. マイク入力",
+        "13. セキュリティ"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-011",
+      "title": "起動時にマイク許可を求める",
+      "description": "起動時に一度マイクを要求し、デバイス名を表示できるようにする。",
+      "category": "device",
+      "priority": "should",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "起動後にデバイス名（ラベル）が表示される"
+      ],
+      "design": [
+        "9. マイク入力"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-012",
+      "title": "エラーを画面に表示する",
+      "description": "マイクが拒否された、見つからない、使用できないときに、画面にメッセージを出す。",
+      "category": "error",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "NotAllowedError の場合は許可設定の確認を促すメッセージ",
+        "NotFoundError / OverconstrainedError の場合はマイク未接続のメッセージ",
+        "NotReadableError の場合は他のアプリの使用を確認するメッセージ",
+        "メッセージは 1 行に収め、入りきらない部分は末尾を … で省略する（全文は title で確認できる）"
+      ],
+      "design": [
+        "10. エラー処理"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified",
+        "notes": "コードのみ。マイクの拒否・未接続を再現していない"
+      }
+    },
+    {
+      "id": "F-013",
+      "title": "保存完了を画面に表示する",
+      "description": "保存後に、保存先の絶対パスを画面下に表示する。パスが幅に収まらないときは、ニュースティッカーのように自動で横に流す。",
+      "category": "feedback",
+      "priority": "should",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "停止後に「保存しました: <絶対パス>」と表示される（Electron 以外では「<ファイル名> を保存しました」）",
+        "パスが幅に収まらないときは、横に流れて全文を読める",
+        "パスが幅に収まるときは、流れずに表示する"
+      ],
+      "design": [
+        "11. 保存",
+        "12. IPC と preload",
+        "16. ティッカー表示"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-014",
+      "title": "操作ボタンをアイコンで表示する",
+      "description": "開始・一時停止/再開・停止をアイコンで表示する。ボタンは 30×20px。",
+      "category": "ui",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "開始は ●、一時停止は ❚❚、再開は ▶、停止は ■",
+        "各ボタンに aria-label と title を付ける"
+      ],
+      "design": [
+        "15. UI レイアウト"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-015",
+      "title": "動作状態のラベルを表示しない",
+      "description": "「待機中」「録音中」「一時停止中」の表示はしない。",
+      "category": "ui",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "タイマーの上に状態の文字が出ない"
+      ],
+      "design": [
+        "15. UI レイアウト"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-016",
+      "title": "ウィンドウを固定サイズにする",
+      "description": "ウィンドウは 256×80 で、リサイズできない。すべての操作要素が収まる。",
+      "category": "ui",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_electron_config.py",
+      "acceptance": [
+        "内容の領域が 256×80 である",
+        "スクロールは発生しない",
+        "リサイズ・最大化・全画面化ができない"
+      ],
+      "design": [
+        "14. ウィンドウ"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-017",
+      "title": "開始ボタンの連打を防ぐ",
+      "description": "開始処理の途中で、もう一度開始が押されても録音を二重に始めない。",
+      "category": "recording",
+      "priority": "should",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "開始処理中・録音中の開始操作は無視される"
+      ],
+      "design": [
+        "8. 状態遷移と一時停止"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-018",
+      "title": "日本語で表示する",
+      "description": "画面の文言は日本語にする。",
+      "category": "ui",
+      "priority": "should",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "ボタンの aria-label、メッセージ、マイク名の既定表示が日本語"
+      ],
+      "design": [
+        "15. UI レイアウト"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-019",
+      "title": "停止処理の失敗に対応する",
+      "description": "停止処理（MP3 の完成、保存）が失敗しても、画面が録音中のまま止まらないようにする。エラーを画面に表示し、マイクと音声処理を解放して、次の録音を開始できる状態に戻す。",
+      "category": "error",
+      "priority": "should",
+      "status": "planned",
+      "implemented": false,
+      "testPath": null,
+      "acceptance": [
+        "停止処理が失敗すると、エラーメッセージを画面に表示する",
+        "失敗後はボタンが初期状態（開始のみ有効）に戻る",
+        "失敗時もマイクのトラックと AudioContext を解放する",
+        "失敗後に新しい録音を開始できる"
+      ],
+      "design": [
+        "10. エラー処理"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-020",
+      "title": "一時停止・再開ボタンの連打を防ぐ",
+      "description": "一時停止・再開の処理の途中で同じボタンが押されても、二重に処理しない。開始・停止と同様に、処理中の操作は無視する。",
+      "category": "recording",
+      "priority": "should",
+      "status": "planned",
+      "implemented": false,
+      "testPath": null,
+      "acceptance": [
+        "一時停止・再開の処理中に押された操作は無視される",
+        "連打しても、一時停止と再開の状態が食い違わない",
+        "処理が終わると、ボタンが次の操作を受け付ける"
+      ],
+      "design": [
+        "8. 状態遷移と一時停止"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-021",
+      "title": "画面を録画する",
+      "description": "開始ボタンで映像と音声の録画を始める。停止で mp4 を Downloads に保存する（MP3 は出力しない）。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "開始で映像と音声の録画が始まる",
+        "停止で mp4 が保存される",
+        "録画中は経過時間で録画中であることを示す"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン",
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-022",
+      "title": "映像に音声を含める",
+      "description": "映像の mp4 に、マイク入力を含める（Opus、48kHz、モノラル、128kbps）。スピーカーのライン入力（システム音）は、Windows では取得の対象だが、Linux では未取得（未決。要件書 10 章）。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "mp4 に音声トラック（Opus）がある",
+        "マイクの音が含まれる（fake マイクで確認）",
+        "スピーカーの音が含まれる（Windows で確認。Linux は未決）"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "failed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-023",
+      "title": "映像を 10fps の CFR にする",
+      "description": "映像のフレームレートを 10fps の固定にする。間に合わないフレームは落とす（複製や補間はしない）。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "ffprobe でフレームレートが 10fps と判定される"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-024",
+      "title": "映像の形式を H.264 の mp4 にする",
+      "description": "コーデックは H.264、コンテナは mp4。解像度は 1280×720 px、ビットレートは約 1Mbps（可変。目標値）にする。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "コーデックが H.264",
+        "解像度が 1280×720",
+        "ビットレートが約 1Mbps（目標値）"
+      ],
+      "design": [
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-025",
+      "title": "マウスカーソルを映像に含めない",
+      "description": "録画した映像に、マウスカーソルを映さない。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "録画した映像にカーソルが映らない"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-026",
+      "title": "一時停止中の映像と音声を記録しない",
+      "description": "一時停止の間は映像と音声を記録せず、再開すると停止時間を除いて続けて記録する。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "一時停止を挟んだ録画の長さが、停止時間を除いた経過時間と一致する"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-027",
+      "title": "録画ウィンドウを映像から除外する",
+      "description": "録画中、アプリ自身の窓（256×80）を映像に映さない。Windows と macOS では表示保護で除外する。Linux では除外できず、窓が映る（ADR-0021。未解決）。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_electron_config.py",
+      "acceptance": [
+        "録画した映像にアプリの窓が映らない"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "failed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-028",
+      "title": "プライマリ画面を録画する",
+      "description": "録画の対象はプライマリ画面（全画面）の 1 つ。内部では画面 ID で扱い、将来の画面選択に備える。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_electron_config.py",
+      "acceptance": [
+        "録画対象がプライマリ画面の ID で指定されている"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-029",
+      "title": "録画時間の上限を 2 時間にする",
+      "description": "2 時間に達したら録画を自動で止め、ここまでの映像と音声を保存する。上限に達したことをメッセージで示す。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "2 時間で録画が止まり、mp4 が保存される",
+        "上限に達したことを示すメッセージが表示される"
+      ],
+      "design": [
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-030",
+      "title": "3 分単位で一時ファイルに書き出す",
+      "description": "録画中に符号化した H.264 と Opus のデータを、3 分ごとの一時ファイルに書き出す。メモリ上に残す量を抑える。停止して保存が完了したら一時ファイルを削除する。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "electron/recording/recording.test.cjs",
+      "acceptance": [
+        "録画中、メモリ上の映像データが 3 分分を超えない",
+        "3 分ごとに一時ファイルが切り替わる",
+        "保存完了後に一時ファイルが削除される"
+      ],
+      "design": [
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-031",
+      "title": "停止時に mp4 を作る",
+      "description": "停止時に、一時ファイルの符号化データを mp4 にまとめる（再符号化はしない）。作った mp4 を Downloads に保存する（保存先のダイアログは出さない）。録画が見られるのは、mp4 の作成が成功したときだけ。 書き込み中は .partial の名前にし、完了したら .mp4 に変える。途中で失敗したら、途中の mp4 を削除する（中間ファイルは残す）。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_electron_config.py",
+      "acceptance": [
+        "停止後に mp4 が Downloads に保存される",
+        "映像の符号化は録画中に行われ、停止時に再符号化しない",
+        "保存後に一時ファイルが削除される",
+        "多重化が途中で失敗したとき、途中の mp4（.partial）が削除される"
+      ],
+      "design": [
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-032",
+      "title": "映像のファイル名を付ける",
+      "description": "映像のファイル名は screen_YYYYMMDD_HHMMSS.mp4 の形式。時刻は録画開始時のローカル時刻。一時停止と再開をしても変えない。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": null,
+      "acceptance": [
+        "ファイル名が screen_YYYYMMDD_HHMMSS.mp4 の形式である",
+        "一時停止と再開をしてもファイル名が変わらない"
+      ],
+      "design": [
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-033",
+      "title": "画面収録の権限を求め、拒否時にエラーを表示する",
+      "description": "画面収録の権限を要求する。拒否されたら「画面の録画が許可されていません。OSやアプリの画面収録の設定を確認してください。」を表示し、録画を始めない。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_electron_config.py",
+      "acceptance": [
+        "権限が拒否されると、その文言が表示される",
+        "権限が拒否されると、録画は始まらない"
+      ],
+      "design": [
+        "25. 画面収録の権限"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-034",
+      "title": "フレームレートを設定値にする",
+      "description": "フレームレートを 1〜30fps の設定値として扱う。既定値は 10fps。今回は既定値だけを使い、変更の手段（コマンドライン、メニュー）は将来対応とする。",
+      "category": "screenRecording",
+      "priority": "should",
+      "status": "planned",
+      "implemented": false,
+      "testPath": null,
+      "acceptance": [
+        "既定値が 10 である",
+        "1〜30 の範囲外の値は使われず、既定値に戻る"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-035",
+      "title": "空き容量を確認する",
+      "description": "録画の開始前と録画中に、中間ファイルを置く場所の空き容量を確認する。足りなくなったら録画を止め、中間ファイルを残す。停止後は、空き容量があるときだけ mp4 を作る。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "electron/recording/recording.test.cjs",
+      "acceptance": [
+        "空き容量が 3GB 未満のとき、録画は始まらない（仮）",
+        "録画中、空き容量が「中間データの大きさ＋0.5GB」を下回ると、録画が止まり、中間ファイルが残る（仮）",
+        "停止後、空き容量が「中間データの大きさ＋0.2GB」未満のときは、mp4 を作らず中間ファイルが残る（仮）",
+        "空き容量の不足で止めるときは mp4 を作らない（システムの安定性を優先）"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン",
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-036",
+      "title": "符号化をハードウェアで行い、使えないときは CPU で行う",
+      "description": "H.264 の符号化は、ハードウェア符号化が使えるときはそれを使う。使えないときは、CPU で録画中に符号化する。使った方式を録画ごとに記録する。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "ハードウェア符号化が使えない環境でも録画が完了する",
+        "使った方式（ハードウェアかソフトウェアか）が記録される",
+        "録画中の CPU 使用率が 10% 以下（上限を超えそうなときはフレームレートが下がる）"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン"
+      ],
+      "verification": {
+        "automatedE2E": "passed",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-037",
+      "title": "同じ画面のフレームは保存しない",
+      "description": "直前のフレームと同じ画面（縮小後、画素単位で一致）のフレームは、符号化も一時ファイルへの保存もしない。停止時の mp4 では、その時刻にスキップフレームを置き、10fps の CFR を保つ。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "同じフレームは、最初の 1 フレームだけがスキップフレームとして一時ファイルに保存され、以降は保存されない",
+        "mp4 は ffprobe で 10fps と判定される",
+        "一時停止と再開をはさんでも映像が正しく再生される"
+      ],
+      "design": [
+        "23. 画面録画のパイプライン",
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-038",
+      "title": "停止時の進み具合を表示する",
+      "description": "停止して mp4 を作る間、進み具合を割合（%）で表示する。終わると保存完了の表示に変わる。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "tests/test_ui_source.py",
+      "acceptance": [
+        "停止中に「保存しています… NN%」の割合が増えていく",
+        "終わると「保存しました: <絶対パス>」に変わる"
+      ],
+      "design": [
+        "24. 中間ファイルと mp4 の作成"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-039",
+      "title": "空き容量不足で止めた録画の場所を案内し、次回起動時に掃除する",
+      "description": "空き容量が足りなくなって止めたときは、mp4 を作らず、中間ファイルの場所を画面に表示する。次回起動時に前回の一時ファイルを削除する。この録画は見られない（決定）。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "electron/recording/recording.test.cjs",
+      "acceptance": [
+        "録画を止めたときに中間ファイルの場所が表示される",
+        "次回起動時に前回の一時ファイルが削除される"
+      ],
+      "design": [
+        "26. 一時ファイルの掃除と異常終了"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    },
+    {
+      "id": "F-040",
+      "title": "異常終了のときは中間ファイルを自動で削除する",
+      "description": "録画中に正常に終了しなかったとき（クラッシュ、電源断など）は、次回起動時に中間ファイルを自動で削除する。この録画は見られない（決定）。 途中まで書いた mp4（.partial）も、次回起動時に削除する。",
+      "category": "screenRecording",
+      "priority": "must",
+      "status": "implemented",
+      "implemented": true,
+      "testPath": "electron/recording/recording.test.cjs",
+      "acceptance": [
+        "録画中に強制終了し、次回起動すると中間ファイルが削除される",
+        "正常に停止して保存した録画の一時ファイルは削除される",
+        "多重化の途中で強制終了すると、次回起動時に .partial が削除される"
+      ],
+      "design": [
+        "26. 一時ファイルの掃除と異常終了"
+      ],
+      "verification": {
+        "automatedE2E": "not-run",
+        "realMicrophone": "not-verified"
+      }
+    }
+  ],
+  "outOfScope": [
+    "音声の再生",
+    "保存先を選ぶダイアログ",
+    "MP3 以外の形式",
+    "インストーラーなどのパッケージ化",
+    "macOS での動作確認（将来検討）",
+    "エコーキャンセル・ノイズ抑制（設計書 21 章 D-08）",
+    "画面の選択（将来対応。今はプライマリ画面を固定で対象にする）",
+    "fps の変更手段（コマンドライン、メニュー。将来対応）"
+  ]
+}
