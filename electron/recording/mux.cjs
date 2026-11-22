@@ -26,13 +26,13 @@ function listSegments(dir) {
  * @param {string} options.dir Recording folder.
  * @param {string} options.outPath File to write (normally the ".partial" name).
  * @param {boolean} options.hasAudio Whether audio records are expected.
- * @param {number} options.width Video width (1280).
- * @param {number} options.height Video height (720).
+ * @param {number} options.width Video width (1920).
+ * @param {number} options.height Video height (1080).
  * @param {(fraction: number) => void} [options.onProgress] Called with 0..1.
  * @param {number} [options.totalDurationUs] Length of the whole recording (microseconds), used for the progress.
  * @returns {Promise<{videoSamples: number, audioSamples: number, durationUs: number}>}
  */
-async function muxRecording({ dir, outPath, hasAudio, width = 1280, height = 720, onProgress, totalDurationUs = 0 }) {
+async function muxRecording({ dir, outPath, hasAudio, width = 1920, height = 1080, onProgress, totalDurationUs = 0 }) {
   const { Muxer, StreamTarget } = await import('mp4-muxer');
   const segments = listSegments(dir);
   if (segments.length === 0) throw new Error('録画データが見つかりません。');
@@ -72,7 +72,7 @@ async function muxRecording({ dir, outPath, hasAudio, width = 1280, height = 720
     };
 
     const videoMeta = () => ({
-      decoderConfig: { codec: 'avc1.4d401f', codedWidth: width, codedHeight: height, description: avcC },
+      decoderConfig: { codec: 'avc1.4d4028', codedWidth: width, codedHeight: height, description: avcC },
     });
     // The OpusHead description is optional; mp4-muxer uses defaults without it.
     const opusDescription = asc && asc.byteLength >= MIN_OPUS_HEAD ? asc : undefined;

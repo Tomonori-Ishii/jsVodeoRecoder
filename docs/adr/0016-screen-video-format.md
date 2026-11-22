@@ -1,6 +1,6 @@
 # ADR-0016: 映像の形式は H.264、mp4、1280×720、10fps、約 1Mbps にする
 
-- **Status**: Accepted（画質は実機で確認する）
+- **Status**: Superseded by [ADR-0027](0027-video-1080p-3mbps.md)（解像度とビットレートを変更。H.264、mp4、10fps の決定は残る）
 - **Date**: 2026-11-21
 
 ## Context
